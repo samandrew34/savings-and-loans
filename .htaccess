@@ -1,0 +1,28 @@
+RewriteEngine On
+
+# Hide .php extension in the URL
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ $1.php [QSA,L]
+RewriteEngine On
+
+# Hide .php extension in the URL
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ $1.php [QSA,L]
+
+# Redirect .php URLs to clean URLs (optional)
+RewriteCond %{THE_REQUEST} \s/([a-zA-Z0-9_-]+)\.php[\s?] [NC]
+RewriteRule ^ %1 [R=301,L]
+
+
+RewriteEngine On
+
+# Hide .php extension in the URL
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule ^(.*)$ $1.php [QSA,L]
+
+# Redirect .php URLs to clean URLs (optional)
+RewriteCond %{THE_REQUEST} \s/([a-zA-Z0-9_-]+)\.php[\s?] [NC]
+RewriteRule ^ %1 [R=301,L]
