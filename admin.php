@@ -1,74 +1,64 @@
-
-
 <?php
 session_start();
-require 'config/config.php';
+require 'config/connection.php';
 
-// Redirect if not logged in
 if (!isset($_SESSION['userid'])) {
     header("Location: signin.php");
     exit();
 }
 
-// Fetch permissions for the logged-in user
 $userid = $_SESSION['userid'];
 $role = $_SESSION['role'];
 
-// Check if role is valid
 if (empty($role)) {
     die("Role is not set correctly.");
 }
 
-// Modified query to account for the visibility columns
-$stmt = $conn->prepare("
-    SELECT menu_head, dropdown_item, hide_menu, hide_dropdown, visible_to_user_ids, visible_to_all, visible_to_one, show_to_specific_ids, links
-    FROM permit 
-    WHERE role = ? AND hide_menu = 0
-");
-
-if ($stmt === false) {
-    die("Failed to prepare the statement: " . $conn->error);
-}
-
-$stmt->bind_param("s", $role);
-$stmt->execute();
-$result = $stmt->get_result();
+// Fetch menu items using Medoo
+$menus = $database->select("permit", [
+    "menu_head",
+    "dropdown_item",
+    "hide_menu",
+    "hide_dropdown",
+    "visible_to_user_ids",
+    "visible_to_all",
+    "visible_to_one",
+    "show_to_specific_ids",
+    "links"
+], [
+    "role" => $role,
+    "hide_menu" => 0
+]);
 
 // Initialize menu array
 $menu = [];
-while ($row = $result->fetch_assoc()) {
-    // Extract visibility data
-    $visible_to_user_ids = $row['visible_to_user_ids'] ? explode(',', $row['visible_to_user_ids']) : [];
-    $show_to_specific_ids = $row['show_to_specific_ids'] ? explode(',', $row['show_to_specific_ids']) : [];
+
+foreach ($menus as $row) {
+    $visible_to_user_ids = !empty($row['visible_to_user_ids']) ? explode(',', $row['visible_to_user_ids']) : [];
+    $show_to_specific_ids = !empty($row['show_to_specific_ids']) ? explode(',', $row['show_to_specific_ids']) : [];
     $visible_to_all = $row['visible_to_all'];
     $visible_to_one = $row['visible_to_one'];
-    $links = $row['links']; // Get the link from the database
+    $links = $row['links'];
 
-    // Determine visibility
     $is_visible = true;
 
-    // If visible_to_all is 1, hide the menu from all users
     if ($visible_to_all == 1) {
         $is_visible = false;
     }
 
-    // If visible_to_one is 0, hide the menu for this specific user
     if ($visible_to_one == 0 && in_array($userid, $visible_to_user_ids)) {
         $is_visible = false;
     }
 
-    // Check if the user is in the `show_to_specific_ids` list
     if (!empty($show_to_specific_ids) && !in_array($userid, $show_to_specific_ids)) {
         $is_visible = false;
     }
 
-    // If the menu is still visible, add it to the $menu array
     if ($is_visible) {
         if (!isset($menu[$row['menu_head']])) {
             $menu[$row['menu_head']] = [];
         }
         if ($row['hide_dropdown'] == 0) {
-            // Add the link along with the item name
             $menu[$row['menu_head']][] = ['item' => $row['dropdown_item'], 'links' => $links];
         }
     }
@@ -113,10 +103,10 @@ while ($row = $result->fetch_assoc()) {
           </button>
           <a class="navbar-brand py-lg-2 mb-lg-5 px-lg-6 me-0" href="#">
             <h3 class="text-success">
-              <img src="https://bytewebster.com/img/logo.png" width="40" /><span
+              <!-- <img src="https://bytewebster.com/img/logo.png" width="40" /><span
                 class="text-info"
-                >BYTE</span
-              >WEBSTER
+                > --> OKRU  MICRO-CREDIT</span
+              >
             </h3>
           </a>
           <div class="navbar-user d-lg-none">
@@ -153,6 +143,7 @@ while ($row = $result->fetch_assoc()) {
       
 
 
+
       <?php include 'menu/sidebar.php'; ?>
         </div>
       </nav>
@@ -163,15 +154,18 @@ while ($row = $result->fetch_assoc()) {
               <div class="row align-items-center">
                 <div class="col-sm-6 col-12 mb-4 mb-sm-0">
                   <h1 class="h2 mb-0 ls-tight">
-                    <img
+                    <!-- <img
                       src="https://bytewebster.com/img/logo.png"
                       width="40"
-                    />
-                    ByteWebster Application
+                    /> -->
+                    OKRU MICRO-CREDIT
                   </h1>
                 </div>
                 <div class="col-sm-6 col-12 text-sm-end">
                   <div class="mx-n1">
+
+   
+
                     <a
                       href="#"
                       class="btn d-inline-flex btn-sm btn-neutral border-base mx-1"
@@ -181,7 +175,7 @@ while ($row = $result->fetch_assoc()) {
                       </span>
                       <span>Edit</span>
                     </a>
-                    <a
+                    <!-- <a
                       href="#"
                       class="btn d-inline-flex btn-sm btn-primary mx-1"
                     >
@@ -189,7 +183,7 @@ while ($row = $result->fetch_assoc()) {
                         <i class="bi bi-plus"></i>
                       </span>
                       <span>Create</span>
-                    </a>
+                    </a> -->
                     <a
                       href="#"
                       class="btn d-inline-flex btn-sm btn-warning mx-1"
@@ -218,136 +212,13 @@ while ($row = $result->fetch_assoc()) {
         </header>
         <main class="py-6 bg-surface-secondary">
           <div class="container-fluid">
-            <div class="row g-6 mb-6">
-              <div class="col-xl-3 col-sm-6 col-12">
-                <div class="card shadow border-0">
-                  <div class="card-body">
-                    <div class="row">
-                      <div class="col">
-                        <span
-                          class="h6 font-semibold text-muted text-sm d-block mb-2"
-                          >Budget</span
-                        >
-                        <span class="h3 font-bold mb-0">$11590.90</span>
-                      </div>
-                      <div class="col-auto">
-                        <div
-                          class="icon icon-shape bg-tertiary text-white text-lg rounded-circle"
-                        >
-                          <i class="bi bi-credit-card"></i>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="mt-2 mb-0 text-sm">
-                      <span
-                        class="badge badge-pill bg-soft-success text-success me-2"
-                      >
-                        <i class="bi bi-arrow-up me-1"></i>37%
-                      </span>
-                      <span class="text-nowrap text-xs text-muted"
-                        >Since last month</span
-                      >
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="col-xl-3 col-sm-6 col-12">
-                <div class="card shadow border-0">
-                  <div class="card-body">
-                    <div class="row">
-                      <div class="col">
-                        <span
-                          class="h6 font-semibold text-muted text-sm d-block mb-2"
-                          >New projects</span
-                        >
-                        <span class="h3 font-bold mb-0">320</span>
-                      </div>
-                      <div class="col-auto">
-                        <div
-                          class="icon icon-shape bg-primary text-white text-lg rounded-circle"
-                        >
-                          <i class="bi bi-people"></i>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="mt-2 mb-0 text-sm">
-                      <span
-                        class="badge badge-pill bg-soft-success text-success me-2"
-                      >
-                        <i class="bi bi-arrow-up me-1"></i>80%
-                      </span>
-                      <span class="text-nowrap text-xs text-muted"
-                        >Since last month</span
-                      >
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="col-xl-3 col-sm-6 col-12">
-                <div class="card shadow border-0">
-                  <div class="card-body">
-                    <div class="row">
-                      <div class="col">
-                        <span
-                          class="h6 font-semibold text-muted text-sm d-block mb-2"
-                          >Total hours</span
-                        >
-                        <span class="h3 font-bold mb-0">4.100</span>
-                      </div>
-                      <div class="col-auto">
-                        <div
-                          class="icon icon-shape bg-info text-white text-lg rounded-circle"
-                        >
-                          <i class="bi bi-clock-history"></i>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="mt-2 mb-0 text-sm">
-                      <span
-                        class="badge badge-pill bg-soft-danger text-danger me-2"
-                      >
-                        <i class="bi bi-arrow-down me-1"></i>-5%
-                      </span>
-                      <span class="text-nowrap text-xs text-muted"
-                        >Since last month</span
-                      >
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="col-xl-3 col-sm-6 col-12">
-                <div class="card shadow border-0">
-                  <div class="card-body">
-                    <div class="row">
-                      <div class="col">
-                        <span
-                          class="h6 font-semibold text-muted text-sm d-block mb-2"
-                          >Work load</span
-                        >
-                        <span class="h3 font-bold mb-0">88%</span>
-                      </div>
-                      <div class="col-auto">
-                        <div
-                          class="icon icon-shape bg-warning text-white text-lg rounded-circle"
-                        >
-                          <i class="bi bi-minecart-loaded"></i>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="mt-2 mb-0 text-sm">
-                      <span
-                        class="badge badge-pill bg-soft-success text-success me-2"
-                      >
-                        <i class="bi bi-arrow-up me-1"></i>10%
-                      </span>
-                      <span class="text-nowrap text-xs text-muted"
-                        >Since last month</span
-                      >
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
+      
+
+            <?php include 'details/overview.php'; ?>
+
+            
+           
+         
             <div class="card shadow border-0 mb-7">
               <div class="card-header">
                 <h5 class="mb-0">Applications</h5>

@@ -1,3 +1,5 @@
+
+
 <?php
 session_start();
 require 'config/config.php';
@@ -56,14 +58,7 @@ while ($row = $result->fetch_assoc()) {
     }
 
     // Check if the user is in the `show_to_specific_ids` list
-    if (!empty($show_to_specific_ids) && in_array($userid, $show_to_specific_ids)) {
-        // If the user is in `show_to_specific_ids`, make the menu item visible
-        $is_visible = true;
-    }
-
-    // Check if the user is in the `visible_to_user_ids` list (and if they are not in `show_to_specific_ids`)
-    if (!empty($visible_to_user_ids) && in_array($userid, $visible_to_user_ids) && !in_array($userid, $show_to_specific_ids)) {
-        // If the user is in `visible_to_user_ids` but not in `show_to_specific_ids`, hide the menu
+    if (!empty($show_to_specific_ids) && !in_array($userid, $show_to_specific_ids)) {
         $is_visible = false;
     }
 
@@ -78,59 +73,4 @@ while ($row = $result->fetch_assoc()) {
         }
     }
 }
-
 ?>
-
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Dashboard</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="bg-gray-100">
-  <div class="min-h-screen flex">
-    <!-- Sidebar -->
-    <div class="w-64 bg-gray-800 text-white">
-      <div class="p-4 text-center">
-        <h2 class="text-lg font-bold">Welcome</h2>
-        <p><?= htmlspecialchars($_SESSION['fullname']); ?></p>
-        <p class="text-sm"><?= htmlspecialchars($_SESSION['email']); ?></p>
-        <p class="text-sm"><?= htmlspecialchars($_SESSION['role']); ?></p>
-      </div>
-      <ul class="mt-4">
-        <?php foreach ($menu as $menu_head => $dropdown_items): ?>
-          <li class="mb-2">
-            <div class="px-4 py-2 bg-gray-700 font-semibold"><?= htmlspecialchars($menu_head); ?></div>
-            <?php if (!empty($dropdown_items)): ?>
-              <ul class="ml-4 mt-2">
-                <?php foreach ($dropdown_items as $item): ?>
-                  <li class="text-sm px-4 py-1 hover:bg-gray-600">
-                    <a href="<?= htmlspecialchars($item['links']); ?>" class="block"><?= htmlspecialchars($item['item']); ?></a>
-                  </li>
-                <?php endforeach; ?>
-              </ul>
-            <?php endif; ?>
-          </li>
-        <?php endforeach; ?>
-      </ul>
-      <!-- Buttons -->
-   
-      <!-- Logout Button -->
-      <div class="mt-4">
-        <form action="signout.php" method="POST">
-          <button type="submit" class="w-full px-4 py-2 bg-red-500 hover:bg-red-700 text-white rounded">
-            Logout
-          </button>
-        </form>
-      </div>
-    </div>
-    <!-- Main Content -->
-    <div class="flex-grow p-6">
-      <h1 class="text-2xl font-bold">Dashboard</h1>
-      <p>Welcome to your dashboard! Use the menu to navigate.</p>
-    </div>
-  </div>
-</body>
-</html>

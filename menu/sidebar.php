@@ -1,12 +1,12 @@
-      
- <div class="collapse navbar-collapse" id="sidebarCollapse">
+
+<div class="collapse navbar-collapse" id="sidebarCollapse">
     <a href="#" class="dropdown-item"><?= htmlspecialchars($_SESSION['fullname']); ?></a>
     <a href="#" class="dropdown-item"><?= htmlspecialchars($_SESSION['email']); ?></a>
     <a href="#" class="dropdown-item"><?= htmlspecialchars($_SESSION['role']); ?></a>
       
         <ul class="navbar-nav w-100">
         <li class="nav-item">
-            <a class="nav-link" href="#"><i class="bi bi-house"></i> Dashboard</a>
+            <a class="nav-link" href="admin.php"><i class="bi bi-house"></i> Dashboard</a>
           </li> 
         <?php foreach ($menu as $menu_head => $dropdown_items): ?>
        
@@ -40,8 +40,3 @@
   </a>
 </li>
 
-         
-        </ul>
-
-      
-      </div>
